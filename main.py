@@ -6,7 +6,7 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 from kaggle import KaggleApi as kag_api
 
-__version__ = "2.1.0"
+__version__ = "2.1.1"
 MAIN_PAGE_URL = "https://worldpopulationreview.com/"
 CURRENT_YEAR = 0000
 FILE_NAME = ""
@@ -79,6 +79,7 @@ def get_data():
     FILE_NAME = os.path.join(DATA_FOLDER, f"{CURRENT_YEAR}_population.csv")
     df = pd.DataFrame(data=final_data, columns=key_dict)
     df.to_csv(FILE_NAME, index=False)
+    print(f"[INFO] Data saved to {FILE_NAME}.")
 
 
 def publish_data():
