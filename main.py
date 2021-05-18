@@ -6,11 +6,20 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 from kaggle import KaggleApi as kag_api
 
-__version__ = "2.1.1"
+__version__ = "3.0.0"
 MAIN_PAGE_URL = "https://worldpopulationreview.com/"
+LIVE_PAGE_URL = "https://countrymeters.info/en/list/List_of_countries_and_dependent_territories_of_the_World_by_population"
 CURRENT_YEAR = 0000
 FILE_NAME = ""
 DATA_FOLDER = "dataset"
+
+
+def get_live_pop(url):
+    url = MAIN_PAGE_URL + url
+    html_doc = get_html_doc(url)
+    parse_data = BeautifulSoup(html_doc, 'html.parser')
+    span_data = parse_data.find("span", {"style": "font-size: 36px;"})
+    return span_data.getText()
 
 
 def clear_dir(folder):
@@ -45,10 +54,19 @@ def get_data():
     matched_country_data = pd.read_csv("country_list.csv")
     matched_countries = matched_country_data["location"].tolist()
 
-    html_document = get_html_doc(MAIN_PAGE_URL)
-    soup = BeautifulSoup(html_document, 'html.parser')
-    headers = soup.find("thead", {"class": "jsx-2642336383"})
-    table_body = soup.find("tbody", {"class": "jsx-2642336383"})
+    html_document_1 = get_html_doc(MAIN_PAGE_URL)
+    table_1 = BeautifulSoup(html_document_1, 'html.parser')
+    headers = table_1.find("thead", {"class": "jsx-2642336383"})
+    table_body = table_1.find("tbody", {"class": "jsx-2642336383"})
+
+    html_document_2 = get_html_doc(LIVE_PAGE_URL)
+    table_2 = BeautifulSoup(html_document_2, 'html.parser')
+    table = table_2.find("table", {"class": "facts"})
+
+    live_pop = dict()
+    for tr in table.find_all("tr")[1:]:
+        td_tags = tr.find_all("td")
+        live_pop[td_tags[2].get_text()] = f"{td_tags[3].get_text()}+{td_tags[4].get_text()}"
 
     for th in headers.find("tr"):
         th_text = th.text
@@ -74,11 +92,14 @@ def get_data():
                     text = iso_code
                 if text.__contains__("km²"): text = text[:len(text) - 3] + "sq_km"
                 row_data.append(text)
+            row_data[2] = live_pop[country_name].split("+")[0]
+            row_data[7] = live_pop[country_name].split("+")[1]
             final_data.append(row_data)
 
     FILE_NAME = os.path.join(DATA_FOLDER, f"{CURRENT_YEAR}_population.csv")
     df = pd.DataFrame(data=final_data, columns=key_dict)
     df.to_csv(FILE_NAME, index=False)
+    print(f"Total population: {live_pop['Total population'].split('+')[0]}")
     print(f"[INFO] Data saved to {FILE_NAME}.")
 
 
@@ -94,4 +115,4 @@ def publish_data():
 
 if __name__ == '__main__':
     get_data()
-    publish_data()
+    # publish_data()
