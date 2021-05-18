@@ -6,7 +6,7 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 from kaggle import KaggleApi as kag_api
 
-__version__ = "3.0.0"
+__version__ = "3.0.1"
 MAIN_PAGE_URL = "https://worldpopulationreview.com/"
 LIVE_PAGE_URL = "https://countrymeters.info/en/list/List_of_countries_and_dependent_territories_of_the_World_by_population"
 CURRENT_YEAR = 0000
@@ -115,4 +115,4 @@ def publish_data():
 
 if __name__ == '__main__':
     get_data()
-    # publish_data()
+    publish_data()
