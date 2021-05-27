@@ -5,8 +5,10 @@ import pandas as pd
 from datetime import datetime
 from bs4 import BeautifulSoup
 from kaggle import KaggleApi as kag_api
+from selenium import webdriver
+import time
 
-__version__ = "3.0.1"
+__version__ = "3.1.0"
 MAIN_PAGE_URL = "https://worldpopulationreview.com/"
 LIVE_PAGE_URL = "https://countrymeters.info/en/list/List_of_countries_and_dependent_territories_of_the_World_by_population"
 CURRENT_YEAR = 0000
@@ -41,8 +43,16 @@ def clear_dir(folder):
 
 def get_html_doc(url):
     """ Get HTML page source code in STR format. """
-    response = requests.get(url)
-    return response.text
+    print()
+    options = webdriver.ChromeOptions()
+    options.add_argument('headless')
+    driver = webdriver.Chrome(options=options)
+    driver.get(MAIN_PAGE_URL)
+    time.sleep(3)
+    response = driver.page_source
+    # response = requests.get(url)
+    # return response.text
+    return response
 
 
 def get_data():
@@ -59,14 +69,14 @@ def get_data():
     headers = table_1.find("thead", {"class": "jsx-2642336383"})
     table_body = table_1.find("tbody", {"class": "jsx-2642336383"})
 
-    html_document_2 = get_html_doc(LIVE_PAGE_URL)
-    table_2 = BeautifulSoup(html_document_2, 'html.parser')
-    table = table_2.find("table", {"class": "facts"})
+    # html_document_2 = get_html_doc(LIVE_PAGE_URL)
+    # table_2 = BeautifulSoup(html_document_2, 'html.parser')
+    # table = table_2.find("table", {"class": "facts"})
 
-    live_pop = dict()
-    for tr in table.find_all("tr")[1:]:
-        td_tags = tr.find_all("td")
-        live_pop[td_tags[2].get_text()] = f"{td_tags[3].get_text()}+{td_tags[4].get_text()}"
+    # live_pop = dict()
+    # for tr in table.find_all("tr")[1:]:
+    #     td_tags = tr.find_all("td")
+    #     live_pop[td_tags[2].get_text()] = f"{td_tags[3].get_text()}+{td_tags[4].get_text()}"
 
     for th in headers.find("tr"):
         th_text = th.text
@@ -92,14 +102,15 @@ def get_data():
                     text = iso_code
                 if text.__contains__("km²"): text = text[:len(text) - 3] + "sq_km"
                 row_data.append(text)
-            row_data[2] = live_pop[country_name].split("+")[0]
-            row_data[7] = live_pop[country_name].split("+")[1]
+            # row_data[2] = live_pop[country_name].split("+")[0]
+            # row_data[7] = live_pop[country_name].split("+")[1]
             final_data.append(row_data)
 
     FILE_NAME = os.path.join(DATA_FOLDER, f"{CURRENT_YEAR}_population.csv")
     df = pd.DataFrame(data=final_data, columns=key_dict)
     df.to_csv(FILE_NAME, index=False)
-    print(f"Total population: {live_pop['Total population'].split('+')[0]}")
+    print(df)
+    # print(f"Total population: {live_pop['Total population'].split('+')[0]}")
     print(f"[INFO] Data saved to {FILE_NAME}.")
 
 
