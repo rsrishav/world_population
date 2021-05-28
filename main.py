@@ -112,4 +112,4 @@ def publish_data():
 
 if __name__ == '__main__':
     get_data()
-    print(time.time()-t)
+    publish_data()
