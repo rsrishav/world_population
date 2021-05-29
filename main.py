@@ -9,11 +9,13 @@ from selenium import webdriver
 
 from kaggle import KaggleApi as kag_api
 
-__version__ = "3.1.1"
+__version__ = "3.1.2"
 MAIN_PAGE_URL = "https://worldpopulationreview.com/"
 CURRENT_YEAR = 0000
-FILE_NAME = ""
+FILE_NAME_LIVE = ""
 DATA_FOLDER = "dataset"
+HISTORIC_DATA_HEADERS = ["iso_code", "country", "current_population", "updated_datetime"]
+FILE_NAME_HISTORIC = os.path.join(DATA_FOLDER, f"live_timeseries_population.csv")
 
 
 def get_live_pop(url):
@@ -22,6 +24,14 @@ def get_live_pop(url):
     parse_data = BeautifulSoup(html_doc, 'html.parser')
     span_data = parse_data.find("span", {"style": "font-size: 36px;"})
     return span_data.getText()
+
+
+def save_df_csv(df, path, append):
+    if append:
+        df.to_csv(path, index=False, mode='a', header=not os.path.exists(path))
+    else:
+        df.to_csv(path, index=False)
+    print(f"[INFO] Data saved to {path}.")
 
 
 def clear_dir(folder):
@@ -55,10 +65,10 @@ def get_html_doc(url):
 
 def get_data():
     """ Scrap data from website. """
-    global CURRENT_YEAR, FILE_NAME
+    global CURRENT_YEAR, FILE_NAME_LIVE
 
     final_data = list()
-    key_dict = list()
+    data_headers = list()
     matched_country_data = pd.read_csv("country_list.csv")
     matched_countries = matched_country_data["location"].tolist()
 
@@ -76,7 +86,7 @@ def get_data():
             th_text = th_text.replace("live", "last_updated")
             CURRENT_YEAR = th_text[:4]
         if th_text.__contains__("km²"): th_text = th_text[:len(th_text) - 3] + "sq_km"
-        key_dict.append(th_text)
+        data_headers.append(th_text)
 
     for trow in table_body.find_all("tr"):
         row_data = list()
@@ -93,11 +103,15 @@ def get_data():
                 row_data.append(text)
             final_data.append(row_data)
 
-    FILE_NAME = os.path.join(DATA_FOLDER, f"{CURRENT_YEAR}_population.csv")
-    df = pd.DataFrame(data=final_data, columns=key_dict)
-    df.to_csv(FILE_NAME, index=False)
+    FILE_NAME_LIVE = os.path.join(DATA_FOLDER, f"{CURRENT_YEAR}_population.csv")
+    df = pd.DataFrame(data=final_data, columns=data_headers)
+    df_historic = df[df.columns[0:3]]
+    df_historic = df_historic.assign(updated_date=datetime.utcnow())
+    df_historic.columns = HISTORIC_DATA_HEADERS
+    # df.to_csv(FILE_NAME_LIVE, index=False)
     print(df)
-    print(f"[INFO] Data saved to {FILE_NAME}.")
+    save_df_csv(df, FILE_NAME_LIVE, False)
+    # save_df_csv(df_historic, FILE_NAME_HISTORIC, True)
 
 
 def publish_data():
