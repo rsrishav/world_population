@@ -9,13 +9,13 @@ from selenium import webdriver
 
 from kaggle import KaggleApi as kag_api
 
-__version__ = "3.1.2"
+__version__ = "3.2.0"
 MAIN_PAGE_URL = "https://worldpopulationreview.com/"
 CURRENT_YEAR = 0000
 FILE_NAME_LIVE = ""
 DATA_FOLDER = "dataset"
 HISTORIC_DATA_HEADERS = ["iso_code", "country", "current_population", "updated_datetime"]
-FILE_NAME_HISTORIC = os.path.join(DATA_FOLDER, f"live_timeseries_population.csv")
+FILE_NAME_HISTORIC = os.path.join(DATA_FOLDER, f"timeseries_population_count.csv")
 
 
 def get_live_pop(url):
@@ -108,10 +108,9 @@ def get_data():
     df_historic = df[df.columns[0:3]]
     df_historic = df_historic.assign(updated_date=datetime.utcnow())
     df_historic.columns = HISTORIC_DATA_HEADERS
-    # df.to_csv(FILE_NAME_LIVE, index=False)
     print(df)
     save_df_csv(df, FILE_NAME_LIVE, False)
-    # save_df_csv(df_historic, FILE_NAME_HISTORIC, True)
+    save_df_csv(df_historic, FILE_NAME_HISTORIC, True)
 
 
 def publish_data():
