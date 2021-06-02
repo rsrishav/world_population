@@ -9,13 +9,21 @@ from selenium import webdriver
 
 from kaggle import KaggleApi as kag_api
 
-__version__ = "3.2.0"
+__version__ = "4.0.0"
 MAIN_PAGE_URL = "https://worldpopulationreview.com/"
 CURRENT_YEAR = 0000
 FILE_NAME_LIVE = ""
 DATA_FOLDER = "dataset"
+DATASET_NAME = "world-population"
 HISTORIC_DATA_HEADERS = ["iso_code", "country", "current_population", "updated_datetime"]
 FILE_NAME_HISTORIC = os.path.join(DATA_FOLDER, f"timeseries_population_count.csv")
+
+
+def kaggle_authenticate():
+    api = kag_api()
+    kag_api.authenticate(api)
+    print("\n[INFO] Kaggle api authenticated.")
+    return api
 
 
 def get_live_pop(url):
@@ -113,16 +121,20 @@ def get_data():
     save_df_csv(df_historic, FILE_NAME_HISTORIC, True)
 
 
-def publish_data():
-    api = kag_api()
-    kag_api.authenticate(api)
-    print("[INFO] Kaggle credentials authenticated.")
-    response = kag_api.dataset_create_version(api, DATA_FOLDER, f"Dataset updated till (UTC): {datetime.utcnow()}",
+def publish_data(api, path):
+    response = kag_api.dataset_create_version(api, path, f"Dataset updated till (UTC): {datetime.utcnow()}",
                                               convert_to_csv=True, delete_old_versions=False)
     print(f"[INFO] Kaggle Dataset uploaded.")
-    clear_dir(DATA_FOLDER)
+    clear_dir(path)
+
+
+def kaggle_dataset_download(api, dataset_name, path):
+    kag_api.dataset_download_files(api, dataset_name, unzip=True, path=path)
+    print("[INFO] Dataset downloaded.")
 
 
 if __name__ == '__main__':
+    api = kaggle_authenticate()
+    kaggle_dataset_download(api, DATASET_NAME, DATA_FOLDER)
     get_data()
-    publish_data()
+    publish_data(api, DATA_FOLDER)
