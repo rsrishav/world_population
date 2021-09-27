@@ -82,8 +82,8 @@ def get_data():
 
     html_document_1 = get_html_doc(MAIN_PAGE_URL)
     table_1 = BeautifulSoup(html_document_1, 'html.parser')
-    headers = table_1.find("thead", {"class": "jsx-2642336383"})
-    table_body = table_1.find("tbody", {"class": "jsx-2642336383"})
+    headers = table_1.find("thead", {"class": "jsx-1911055634"})
+    table_body = table_1.find("tbody", {"class": "jsx-1911055634"})
 
     for th in headers.find("tr"):
         th_text = th.text
