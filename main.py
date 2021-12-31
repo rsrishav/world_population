@@ -82,10 +82,10 @@ def get_data():
 
     html_document_1 = get_html_doc(MAIN_PAGE_URL)
     table_1 = BeautifulSoup(html_document_1, 'html.parser')
-    headers = table_1.find("thead", {"class": "jsx-2636433790"})
-    table_body = table_1.find("tbody", {"class": "jsx-2636433790"})
+    headers = table_1.find("div", {"id": "liveWorldPop"}).find("table").find("thead")
+    table_body = table_1.find("div", {"id": "liveWorldPop"}).find("table").find("tbody")
 
-    for th in headers.find("tr"):
+    for th in headers.find_all("th"):
         th_text = th.text
         th_text = th_text.strip().lower().replace(" ", "_").replace("(", "").replace(")", "")
         if th_text == "flag":
