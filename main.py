@@ -82,8 +82,8 @@ def get_data():
 
     html_document_1 = get_html_doc(MAIN_PAGE_URL)
     table_1 = BeautifulSoup(html_document_1, 'html.parser')
-    headers = table_1.find("div", {"id": "liveWorldPop"}).find("table").find("thead")
-    table_body = table_1.find("div", {"id": "liveWorldPop"}).find("table").find("tbody")
+    headers = table_1.find("div", {"class": "datatable-container"}).find("table").find("thead")
+    table_body = table_1.find("div", {"class": "datatable-container"}).find("table").find("tbody")
 
     for th in headers.find_all("th"):
         th_text = th.text
